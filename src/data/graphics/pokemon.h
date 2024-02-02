@@ -1854,6 +1854,7 @@ const u32 gMonStillFrontPic_Wurmple[] = INCBIN_U32("graphics/pokemon/wurmple/fro
 const u32 gMonPalette_Wurmple[] = INCBIN_U32("graphics/pokemon/wurmple/normal.gbapal.lz");
 const u32 gMonBackPic_Wurmple[] = INCBIN_U32("graphics/pokemon/wurmple/back.4bpp.lz");
 const u32 gMonShinyPalette_Wurmple[] = INCBIN_U32("graphics/pokemon/wurmple/shiny.gbapal.lz");
+const u32 gMonShinyPalette2_Wurmple[] = INCBIN_U32("graphics/pokemon/wurmple/shiny2.gbapal.lz");
 const u8 gMonIcon_Wurmple[] = INCBIN_U8("graphics/pokemon/wurmple/icon.4bpp");
 const u8 gMonFootprint_Wurmple[] = INCBIN_U8("graphics/pokemon/wurmple/footprint.1bpp");
 

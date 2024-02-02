@@ -1890,6 +1890,7 @@ extern const u32 gMonFrontPic_Wurmple[];
 extern const u32 gMonPalette_Wurmple[];
 extern const u32 gMonBackPic_Wurmple[];
 extern const u32 gMonShinyPalette_Wurmple[];
+extern const u32 gMonShinyPalette2_Wurmple[];
 extern const u32 gMonStillFrontPic_Wurmple[];
 extern const u8 gMonIcon_Wurmple[];
 extern const u8 gMonFootprint_Wurmple[];

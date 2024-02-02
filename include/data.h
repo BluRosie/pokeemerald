@@ -3,7 +3,8 @@
 
 #include "constants/moves.h"
 
-#define SPECIES_SHINY_TAG 500
+#define SPECIES_SHINY_TAG 0
+#define SPECIES_SHINY_TAG_2 0
 
 #define MAX_TRAINER_ITEMS 4
 
@@ -120,6 +121,7 @@ extern const struct MonCoords gMonBackPicCoords[];
 extern const struct CompressedSpriteSheet gMonBackPicTable[];
 extern const struct CompressedSpritePalette gMonPaletteTable[];
 extern const struct CompressedSpritePalette gMonShinyPaletteTable[];
+extern const struct CompressedSpritePalette gMonShinyPaletteTable2[];
 extern const union AnimCmd *const *const gTrainerFrontAnimsPtrTable[];
 extern const struct MonCoords gTrainerFrontPicCoords[];
 extern const struct CompressedSpriteSheet gTrainerFrontPicTable[];

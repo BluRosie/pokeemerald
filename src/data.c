@@ -301,6 +301,7 @@ const union AnimCmd *const gAnims_MonPic[MAX_MON_PIC_FRAMES] =
 #define SPECIES_SPRITE(species, sprite) [SPECIES_##species] = {sprite, MON_PIC_SIZE, SPECIES_##species}
 #define SPECIES_PAL(species, pal) [SPECIES_##species] = {pal, SPECIES_##species}
 #define SPECIES_SHINY_PAL(species, pal) [SPECIES_##species] = {pal, SPECIES_##species + SPECIES_SHINY_TAG}
+#define SPECIES_SHINY_PAL_2(species, pal) [SPECIES_##species] = {pal, SPECIES_##species + SPECIES_SHINY_TAG_2}
 
 #include "data/pokemon_graphics/unused_anims.h"
 #include "data/pokemon_graphics/front_pic_coordinates.h"
