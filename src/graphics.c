@@ -793,6 +793,9 @@ const u32 gBattleAnimSpriteGfx_WispOrb[] = INCBIN_U32("graphics/battle_anims/spr
 const u32 gBattleAnimSpriteGfx_GoldStars[] = INCBIN_U32("graphics/battle_anims/sprites/gold_stars.4bpp.lz");
 const u32 gBattleAnimSpritePal_GoldStars[] = INCBIN_U32("graphics/battle_anims/sprites/gold_stars.gbapal.lz");
 
+const u32 gBattleAnimSpriteGfx_BlueShinyStars[] = INCBIN_U32("graphics/battle_anims/sprites/blue_shiny_stars.4bpp.lz");
+const u32 gBattleAnimSpritePal_BlueShinyStars[] = INCBIN_U32("graphics/battle_anims/sprites/blue_shiny_stars.gbapal.lz");
+
 const u32 gBattleAnimSpriteGfx_EclipsingOrb[] = INCBIN_U32("graphics/battle_anims/sprites/eclipsing_orb.4bpp.lz");
 const u32 gBattleAnimSpritePal_EclipsingOrb[] = INCBIN_U32("graphics/battle_anims/sprites/eclipsing_orb.gbapal.lz");
 

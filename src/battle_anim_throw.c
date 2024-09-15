@@ -2215,12 +2215,13 @@ void AnimTask_SetTargetToEffectBattler(u8 taskId)
 
 void TryShinyAnimation(u8 battler, struct Pokemon *mon)
 {
-    bool8 isShiny;
+    bool8 isShiny, isSuperShiny;
     u32 otId, personality;
     u32 shinyValue;
     u8 taskCirc, taskDgnl;
 
     isShiny = FALSE;
+    isSuperShiny = FALSE;
     gBattleSpritesDataPtr->healthBoxesData[battler].triedShinyMonAnim = TRUE;
     otId = GetMonData(mon, MON_DATA_OT_ID);
     personality = GetMonData(mon, MON_DATA_PERSONALITY);
@@ -2230,13 +2231,20 @@ void TryShinyAnimation(u8 battler, struct Pokemon *mon)
         shinyValue = GET_SHINY_VALUE(otId, personality);
         if (shinyValue < SHINY_ODDS)
             isShiny = TRUE;
+        if (shinyValue == 0)
+            isSuperShiny = TRUE;
 
         if (isShiny)
         {
-            if (GetSpriteTileStartByTag(ANIM_TAG_GOLD_STARS) == 0xFFFF)
+            if (!isSuperShiny && GetSpriteTileStartByTag(ANIM_TAG_GOLD_STARS) == 0xFFFF)
             {
                 LoadCompressedSpriteSheetUsingHeap(&gBattleAnimPicTable[ANIM_TAG_GOLD_STARS - ANIM_SPRITES_START]);
                 LoadCompressedSpritePaletteUsingHeap(&gBattleAnimPaletteTable[ANIM_TAG_GOLD_STARS - ANIM_SPRITES_START]);
+            }
+            if (isSuperShiny && GetSpriteTileStartByTag(ANIM_TAG_BLUE_SHINY_STARS) == 0xFFFF)
+            {
+                LoadCompressedSpriteSheetUsingHeap(&gBattleAnimPicTable[ANIM_TAG_BLUE_SHINY_STARS - ANIM_SPRITES_START]);
+                LoadCompressedSpritePaletteUsingHeap(&gBattleAnimPaletteTable[ANIM_TAG_BLUE_SHINY_STARS - ANIM_SPRITES_START]);
             }
 
             taskCirc = CreateTask(Task_ShinyStars, 10);
@@ -2245,6 +2253,11 @@ void TryShinyAnimation(u8 battler, struct Pokemon *mon)
             gTasks[taskDgnl].tBattler = battler;
             gTasks[taskCirc].tStarMove = SHINY_STAR_ENCIRCLE;
             gTasks[taskDgnl].tStarMove = SHINY_STAR_DIAGONAL;
+            if (isSuperShiny)
+            {
+                gTasks[taskCirc].tBattler |= 0x80;
+                gTasks[taskDgnl].tBattler |= 0x80;
+            }
             return;
         }
     }
@@ -2254,6 +2267,7 @@ void TryShinyAnimation(u8 battler, struct Pokemon *mon)
 
 static void Task_ShinyStars(u8 taskId)
 {
+    bool8 isSuperShiny = FALSE;
     u8 battler;
     u8 x, y;
     u8 spriteId;
@@ -2275,23 +2289,42 @@ static void Task_ShinyStars(u8 taskId)
     if (timer % 4) // Create sprite 1 of every 4 frames
         return;
 
-    battler = gTasks[taskId].tBattler;
+    battler = gTasks[taskId].tBattler & 0x7F;
+    isSuperShiny = gTasks[taskId].tBattler & 0x80;
     x = GetBattlerSpriteCoord(battler, BATTLER_COORD_X);
     y = GetBattlerSpriteCoord(battler, BATTLER_COORD_Y);
 
     starIdx = gTasks[taskId].tStarIdx;
     if (starIdx == 0) // Big star
     {
-        spriteId = CreateSprite(&gWishStarSpriteTemplate, x, y, 5);
+        struct SpriteTemplate template = gWishStarSpriteTemplate;
+        if (isSuperShiny)
+        {
+            template.tileTag = ANIM_TAG_BLUE_SHINY_STARS;
+            template.paletteTag = ANIM_TAG_BLUE_SHINY_STARS;
+        }
+        spriteId = CreateSprite(&template, x, y, 5);
     }
     else if (starIdx >= 0 && gTasks[taskId].tStarIdx < 4) // Medium star
     {
-        spriteId = CreateSprite(&gMiniTwinklingStarSpriteTemplate, x, y, 5);
+        struct SpriteTemplate template = gMiniTwinklingStarSpriteTemplate;
+        if (isSuperShiny)
+        {
+            template.tileTag = ANIM_TAG_BLUE_SHINY_STARS;
+            template.paletteTag = ANIM_TAG_BLUE_SHINY_STARS;
+        }
+        spriteId = CreateSprite(&template, x, y, 5);
         gSprites[spriteId].oam.tileNum += 4;
     }
     else // Small star
     {
-        spriteId = CreateSprite(&gMiniTwinklingStarSpriteTemplate, x, y, 5);
+        struct SpriteTemplate template = gMiniTwinklingStarSpriteTemplate;
+        if (isSuperShiny)
+        {
+            template.tileTag = ANIM_TAG_BLUE_SHINY_STARS;
+            template.paletteTag = ANIM_TAG_BLUE_SHINY_STARS;
+        }
+        spriteId = CreateSprite(&template, x, y, 5);
         gSprites[spriteId].oam.tileNum += 5;
     }
 
@@ -2333,7 +2366,7 @@ static void Task_ShinyStars_Wait(u8 taskId)
     {
         if (gTasks[taskId].tStarMove == SHINY_STAR_DIAGONAL)
         {
-            battler = gTasks[taskId].tBattler;
+            battler = gTasks[taskId].tBattler & 0x7F;
             gBattleSpritesDataPtr->healthBoxesData[battler].finishedShinyMonAnim = TRUE;
         }
 
