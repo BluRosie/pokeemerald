@@ -2236,32 +2236,10 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
     }
     else // Player is the OT
     {
-        u32 shinyValue = Random32();
         value = gSaveBlock2Ptr->playerTrainerId[0]
               | (gSaveBlock2Ptr->playerTrainerId[1] << 8)
               | (gSaveBlock2Ptr->playerTrainerId[2] << 16)
               | (gSaveBlock2Ptr->playerTrainerId[3] << 24);
-        switch (shinyValue % 3)
-        {
-        case 0:
-            do
-            {
-                personality = Random32();
-                shinyValue = GET_SHINY_VALUE(value, personality);
-            } while (shinyValue != 0);
-            SetBoxMonData(boxMon, MON_DATA_PERSONALITY, &personality);
-            break;
-        case 1:
-            do
-            {
-                personality = Random32();
-                shinyValue = GET_SHINY_VALUE(value, personality);
-            } while (shinyValue > SHINY_ODDS);
-            SetBoxMonData(boxMon, MON_DATA_PERSONALITY, &personality);
-            break;
-        default:
-            break;
-        }
     }
 
     SetBoxMonData(boxMon, MON_DATA_OT_ID, &value);
@@ -6520,7 +6498,7 @@ const u32 *GetMonSpritePalFromSpeciesAndPersonality(u16 species, u32 otId, u32 p
         return gMonPaletteTable[SPECIES_NONE].data;
 
     shinyValue = GET_SHINY_VALUE(otId, personality);
-    if (shinyValue == 0)
+    if (shinyValue < SUPER_SHINY_ODDS)
         return gMonShinyPaletteTable2[species].data;
     else if (shinyValue < SHINY_ODDS)
         return gMonShinyPaletteTable[species].data;
@@ -6541,7 +6519,7 @@ const struct CompressedSpritePalette *GetMonSpritePalStructFromOtIdPersonality(u
     u32 shinyValue;
 
     shinyValue = GET_SHINY_VALUE(otId, personality);
-    if (shinyValue == 0)
+    if (shinyValue < SUPER_SHINY_ODDS)
         return &gMonShinyPaletteTable2[species];
     else if (shinyValue < SHINY_ODDS)
         return &gMonShinyPaletteTable[species];
