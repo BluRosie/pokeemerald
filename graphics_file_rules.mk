@@ -60,6 +60,12 @@ $(CASTFORMGFXDIR)/shiny.gbapal: $(CASTFORMGFXDIR)/normal/shiny.gbapal \
                                 $(CASTFORMGFXDIR)/snowy/shiny.gbapal
 	@cat $^ >$@
 
+$(CASTFORMGFXDIR)/shiny_extra.gbapal: $(CASTFORMGFXDIR)/normal/shiny.gbapal \
+                                $(CASTFORMGFXDIR)/sunny/shiny.gbapal \
+                                $(CASTFORMGFXDIR)/rainy/shiny.gbapal \
+                                $(CASTFORMGFXDIR)/snowy/shiny.gbapal
+	@cat $^ >$@
+
 
 
 ### Tilesets ###

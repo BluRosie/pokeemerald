@@ -2879,7 +2879,7 @@ const u32 gMonStillFrontPic_Castform[] = INCBIN_U32("graphics/pokemon/castform/f
 const u32 gMonPalette_Castform[] = INCBIN_U32("graphics/pokemon/castform/normal.gbapal.lz");
 const u32 gMonBackPic_Castform[] = INCBIN_U32("graphics/pokemon/castform/back.4bpp.lz");
 const u32 gMonShinyPalette_Castform[] = INCBIN_U32("graphics/pokemon/castform/shiny.gbapal.lz");
-const u32 gMonShinyPalette2_Castform[] = INCBIN_U32("graphics/pokemon/castform/shiny.gbapal.lz");
+const u32 gMonShinyPalette2_Castform[] = INCBIN_U32("graphics/pokemon/castform/shiny_extra.gbapal.lz");
 const u8 gMonIcon_Castform[] = INCBIN_U8("graphics/pokemon/castform/icon.4bpp");
 const u8 gMonFootprint_Castform[] = INCBIN_U8("graphics/pokemon/castform/footprint.1bpp");
 
@@ -3088,7 +3088,7 @@ const u32 gMonStillFrontPic_Chimecho[] = INCBIN_U32("graphics/pokemon/chimecho/f
 const u32 gMonPalette_Chimecho[] = INCBIN_U32("graphics/pokemon/chimecho/normal.gbapal.lz");
 const u32 gMonBackPic_Chimecho[] = INCBIN_U32("graphics/pokemon/chimecho/back.4bpp.lz");
 const u32 gMonShinyPalette_Chimecho[] = INCBIN_U32("graphics/pokemon/chimecho/shiny.gbapal.lz");
-const u32 gMonShinyPalette2_Chimecho[] = INCBIN_U32("graphics/pokemon/chimecho/shiny.gbapal.lz");
+const u32 gMonShinyPalette2_Chimecho[] = INCBIN_U32("graphics/pokemon/chimecho/shiny_extra.gbapal.lz");
 const u8 gMonIcon_Chimecho[] = INCBIN_U8("graphics/pokemon/chimecho/icon.4bpp");
 const u8 gMonFootprint_Chimecho[] = INCBIN_U8("graphics/pokemon/chimecho/footprint.1bpp");
 
