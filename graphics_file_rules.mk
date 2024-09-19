@@ -60,10 +60,10 @@ $(CASTFORMGFXDIR)/shiny.gbapal: $(CASTFORMGFXDIR)/normal/shiny.gbapal \
                                 $(CASTFORMGFXDIR)/snowy/shiny.gbapal
 	@cat $^ >$@
 
-$(CASTFORMGFXDIR)/shiny_extra.gbapal: $(CASTFORMGFXDIR)/normal/shiny.gbapal \
-                                $(CASTFORMGFXDIR)/sunny/shiny.gbapal \
-                                $(CASTFORMGFXDIR)/rainy/shiny.gbapal \
-                                $(CASTFORMGFXDIR)/snowy/shiny.gbapal
+$(CASTFORMGFXDIR)/shiny_extra.gbapal: $(CASTFORMGFXDIR)/normal/shiny_extra.gbapal \
+                                $(CASTFORMGFXDIR)/sunny/shiny_extra.gbapal \
+                                $(CASTFORMGFXDIR)/rainy/shiny_extra.gbapal \
+                                $(CASTFORMGFXDIR)/snowy/shiny_extra.gbapal
 	@cat $^ >$@
 
 
