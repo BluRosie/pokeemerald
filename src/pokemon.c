@@ -2353,8 +2353,11 @@ void CreateMaleMon(struct Pokemon *mon, u16 species, u8 level)
 
     do
     {
-        otId = Random32();
         personality = Random32();
+        // need wally's ralts to be super shiny, sadly nested do while's but we ball
+        do {
+            otId = Random32();
+        } while (GET_SHINY_VALUE(otId, personality) >= SUPER_SHINY_ODDS);
     }
     while (GetGenderFromSpeciesAndPersonality(species, personality) != MON_MALE);
     CreateMon(mon, species, level, USE_RANDOM_IVS, TRUE, personality, OT_ID_PRESET, otId);

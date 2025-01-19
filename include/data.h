@@ -36,14 +36,16 @@ struct MonCoords
 struct TrainerMonNoItemDefaultMoves
 {
     u16 iv;
-    u8 lvl;
+    u8 lvl:7;
+    u8 superShiny:1;
     u16 species;
 };
 
 struct TrainerMonItemDefaultMoves
 {
     u16 iv;
-    u8 lvl;
+    u8 lvl:7;
+    u8 superShiny:1;
     u16 species;
     u16 heldItem;
 };
@@ -51,7 +53,8 @@ struct TrainerMonItemDefaultMoves
 struct TrainerMonNoItemCustomMoves
 {
     u16 iv;
-    u8 lvl;
+    u8 lvl:7;
+    u8 superShiny:1;
     u16 species;
     u16 moves[MAX_MON_MOVES];
 };
@@ -59,7 +62,8 @@ struct TrainerMonNoItemCustomMoves
 struct TrainerMonItemCustomMoves
 {
     u16 iv;
-    u8 lvl;
+    u8 lvl:7;
+    u8 superShiny:1;
     u16 species;
     u16 heldItem;
     u16 moves[MAX_MON_MOVES];
