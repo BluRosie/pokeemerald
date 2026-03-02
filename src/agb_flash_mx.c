@@ -68,7 +68,7 @@ u16 EraseFlashChip_MX(void)
     FLASH_WRITE(0x2AAA, 0x55);
     FLASH_WRITE(0x5555, 0x10);
 #else
-    for (i = 0x10000-1; i >= 0; i--)
+    for (i = FULL_SAVE_SIZE-1; i >= 0; i--)
     {
         FLASH_WRITE(i, 0xFF);
     }

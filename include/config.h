@@ -56,6 +56,8 @@
 #endif
 
 // Bootleg copies store their ROM and save on a flash chip.  This enables these changes so a ROM can be flashed to it
-//#define FLASH_ROM_CHANGES
+#define FLASH_ROM_CHANGES
+#define SAVE_ADDRESS (0x08FC0000)
+#define FULL_SAVE_SIZE (0x10000)
 
 #endif // GUARD_CONFIG_H

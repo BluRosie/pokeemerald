@@ -294,7 +294,7 @@ _loop_handleFlashType0:
 	bx r0
 
 HandleFlashType0:
-	mov r2, #0xFC
+	mov r2, #((SAVE_ADDRESS & 0xFFFFFF) >> 16)
 	mov r2, r2, lsl#16
 	mov r0, #0x08000000
 	orr r2, r2, r0 @ __rom_save_space
@@ -370,8 +370,8 @@ FlashType0_MakeWriteable_return:
 FlashType0_TransferSRAMToSaveSpace::
 	stmfd sp!, {r2, lr}
 	mov r1, #0x0E000000 @ sram space
-	mov r3, #0x10
-	mov r3, r3, lsl#12 @ save size 0x10000
+	mov r3, #(FULL_SAVE_SIZE >> 12)
+	mov r3, r3, lsl#12 @ save size
 
 FlashType0_TransferSRAMToSaveSpace_loop:
 	ldrb r6, [r1], #1
@@ -418,7 +418,7 @@ _loop_handleFlashType2:
 	bx r0
 
 HandleFlashType2:
-	mov r2, #0xFC
+	mov r2, #((SAVE_ADDRESS & 0xFFFFFF) >> 16)
 	mov r2, r2, lsl#16
 	mov r0, #0x08000000
 	orr r2, r2, r0
@@ -466,8 +466,8 @@ FlashType2_WriteHWordsToStatus:
 FlashType2_TransferSRAMToSaveSpace:
 	stmfd sp!, {r0-r5, lr}
 	mov r1, #0x0E000000
-	mov r3, #0x10
-	mov r3, r3, lsl#0xC @ save size 0x10000
+	mov r3, #(FULL_SAVE_SIZE >> 0xC)
+	mov r3, r3, lsl#0xC @ save size
 
 FlashType2_TransferSRAMToSaveSpace_loop:
 	ldrb r6, [r1], #1
@@ -536,13 +536,13 @@ _loop_handleFlashType1:
 
 
 HandleFlashType1:
-	mov r2, #0xFC
+	mov r2, #((SAVE_ADDRESS & 0xFFFFFF) >> 16)
 	mov r2, r2, lsl#0x10
 	mov r0, #0x08000000
 	orr r2, r2, r0
 	bl FlashType1_MakeWriteable
 	mov r5, #0x0E000000
-	mov r3, #0x10 @ save size 0x10000
+	mov r3, #(FULL_SAVE_SIZE >> 0xC) @ save size
 	mov r3, r3, lsl#0xC
 	bl FlashType1_TransferSRAMToSaveSpace
 	ldr r0, =ReturnFromFlashCodeInRAM+1
@@ -678,7 +678,7 @@ _loop_handleFlashType3:
 	bx r0
 
 HandleFlashType3:
-	mov r2, #0xFC
+	mov r2, #((SAVE_ADDRESS & 0xFFFFFF) >> 16)
 	mov r2, r2, lsl#0x10
 	mov r0, #0x08000000
 	orr r2, r2, r0

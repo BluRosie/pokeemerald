@@ -10,12 +10,12 @@ Init::
 
 #ifdef FLASH_ROM_CHANGES
 // need to copy save to sram from where in the rom it is saved
-	mov r0, #0xFC
+	mov r0, #((SAVE_ADDRESS & 0xFFFFFF) >> 0x10)
 	mov r0, r0, lsl#0x10
 	mov r1, #0x8000000
 	orr r0, r0, r1
 	mov r1, #0xE000000
-	mov r2, #0x10 // 0x10000
+	mov r2, #(FULL_SAVE_SIZE >> 0xC)
 	mov r2, r2, lsl#0xC
 // r0 = 0x08FC0000
 // r1 = 0x0E000000
