@@ -1,3 +1,4 @@
+#include "config.h"
 #include "gba/gba.h"
 #include "gba/flash_internal.h"
 
@@ -55,15 +56,23 @@ u16 EraseFlashChip_MX(void)
 {
     u16 result;
     u16 readFlash1Buffer[0x20];
+    s32 i;
 
     REG_WAITCNT = (REG_WAITCNT & ~WAITCNT_SRAM_MASK) | gFlash->wait[0];
 
+#ifndef FLASH_ROM_CHANGES
     FLASH_WRITE(0x5555, 0xAA);
     FLASH_WRITE(0x2AAA, 0x55);
     FLASH_WRITE(0x5555, 0x80);
     FLASH_WRITE(0x5555, 0xAA);
     FLASH_WRITE(0x2AAA, 0x55);
     FLASH_WRITE(0x5555, 0x10);
+#else
+    for (i = 0x10000-1; i >= 0; i--)
+    {
+        FLASH_WRITE(i, 0xFF);
+    }
+#endif // FLASH_ROM_CHANGES
 
     SetReadFlash1(readFlash1Buffer);
 
@@ -80,6 +89,8 @@ u16 EraseFlashSector_MX(u16 sectorNum)
     u16 result;
     u8 *addr;
     u16 readFlash1Buffer[0x20];
+    s32 i;
+    u32 baseAddr;
 
     if (sectorNum >= gFlash->sector.count)
         return 0x80FF;
@@ -94,12 +105,20 @@ try_erase:
 
     addr = FLASH_BASE + (sectorNum << gFlash->sector.shift);
 
+#ifndef FLASH_ROM_CHANGES
     FLASH_WRITE(0x5555, 0xAA);
     FLASH_WRITE(0x2AAA, 0x55);
     FLASH_WRITE(0x5555, 0x80);
     FLASH_WRITE(0x5555, 0xAA);
     FLASH_WRITE(0x2AAA, 0x55);
     *addr = 0x30;
+#else
+    baseAddr = sectorNum * 0x1000;
+    for (i = (0x1000-1); i >= 0; i--)
+    {
+        FLASH_WRITE(baseAddr + i, 0xFF);
+    }
+#endif
 
     SetReadFlash1(readFlash1Buffer);
 
@@ -135,9 +154,11 @@ u16 ProgramFlashByte_MX(u16 sectorNum, u32 offset, u8 data)
 
     REG_WAITCNT = (REG_WAITCNT & ~WAITCNT_SRAM_MASK) | gFlash->wait[0];
 
+#ifndef FLASH_ROM_CHANGES
     FLASH_WRITE(0x5555, 0xAA);
     FLASH_WRITE(0x2AAA, 0x55);
     FLASH_WRITE(0x5555, 0xA0);
+#endif // FLASH_ROM_CHANGES
     *addr = data;
 
     return WaitForFlashWrite(1, addr, data);
@@ -145,9 +166,11 @@ u16 ProgramFlashByte_MX(u16 sectorNum, u32 offset, u8 data)
 
 static u16 ProgramByte(u8 *src, u8 *dest)
 {
+#ifndef FLASH_ROM_CHANGES
     FLASH_WRITE(0x5555, 0xAA);
     FLASH_WRITE(0x2AAA, 0x55);
     FLASH_WRITE(0x5555, 0xA0);
+#endif
     *dest = *src;
 
     return WaitForFlashWrite(1, dest, *src);

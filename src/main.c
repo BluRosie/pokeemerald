@@ -1,4 +1,5 @@
 #include "global.h"
+#include "config.h"
 #include "crt0.h"
 #include "malloc.h"
 #include "link.h"
@@ -247,9 +248,61 @@ void InitKeys(void)
     gMain.newKeysRaw = 0;
 }
 
+#ifdef FLASH_ROM_CHANGES
+
+static void SubtractFromDays(void)
+{
+    s16 days = gSaveBlock2Ptr->localTimeOffset.days - 1;
+    if (days < 148)
+    {
+        gSaveBlock2Ptr->localTimeOffset.days = days;
+    } else {
+        gSaveBlock2Ptr->localTimeOffset.days = -1;
+    }
+}
+
+#define PLAY_TIME_SECONDS_BUF1 *(u8 *)(0x0201F000)
+#define PLAY_TIME_SECONDS_BUF2 *(u8 *)(0x0201F001)
+
+#endif // FLASH_ROM_CHANGES
+
 static void ReadKeys(void)
 {
+#ifdef FLASH_ROM_CHANGES
+    u16 keyInput;
+
+    if (gSaveBlock2Ptr->playTimeSeconds != PLAY_TIME_SECONDS_BUF1)
+    {
+        u8 tmp;
+        PLAY_TIME_SECONDS_BUF1 = gSaveBlock2Ptr->playTimeSeconds;
+        tmp = PLAY_TIME_SECONDS_BUF2;
+        PLAY_TIME_SECONDS_BUF2 = (++tmp);
+        if (tmp >= 60)
+        {
+            PLAY_TIME_SECONDS_BUF2 = 0;
+            tmp = (u8)(gSaveBlock2Ptr->localTimeOffset.minutes - 1);
+            if (tmp == ((u8)-1u))
+            {
+                gSaveBlock2Ptr->localTimeOffset.minutes = 59;
+                tmp = (u8)(gSaveBlock2Ptr->localTimeOffset.hours - 1);
+                if (tmp == ((u8)-1u))
+                {
+                    SubtractFromDays();
+                    gSaveBlock2Ptr->localTimeOffset.hours = 23;
+                } else {
+                    gSaveBlock2Ptr->localTimeOffset.hours = tmp;
+                }
+            } else {
+                gSaveBlock2Ptr->localTimeOffset.minutes = tmp;
+            }
+        }
+    }
+    keyInput = REG_KEYINPUT ^ KEYS_MASK;
+
+#else 
     u16 keyInput = REG_KEYINPUT ^ KEYS_MASK;
+#endif // FLASH_ROM_CHANGES
+
     gMain.newKeysRaw = keyInput & ~gMain.heldKeysRaw;
     gMain.newKeys = gMain.newKeysRaw;
     gMain.newAndRepeatedKeys = gMain.newKeysRaw;

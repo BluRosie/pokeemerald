@@ -1,4 +1,5 @@
 #include "global.h"
+#include "config.h"
 #include "trainer_pokemon_sprites.h"
 #include "bg.h"
 #include "constants/rgb.h"
@@ -714,7 +715,12 @@ static void Task_MainMenuCheckBattery(u8 taskId)
         SetGpuReg(REG_OFFSET_BLDALPHA, 0);
         SetGpuReg(REG_OFFSET_BLDY, 7);
 
+#ifndef FLASH_ROM_CHANGES
         if (!(RtcGetErrorStatus() & RTC_ERR_FLAG_MASK))
+#else
+        // save batteries are not present on the pirated copies
+        if (TRUE)
+#endif
         {
             gTasks[taskId].func = Task_DisplayMainMenu;
         }

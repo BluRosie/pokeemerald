@@ -1,4 +1,5 @@
 #include "global.h"
+#include "config.h"
 #include "agb_flash.h"
 #include "gba/flash_internal.h"
 #include "fieldmap.h"
@@ -169,6 +170,10 @@ static u8 WriteSaveSectorOrSlot(u16 sectorId, const struct SaveSectorLocation *l
             gSaveCounter = gLastSaveCounter;
         }
     }
+
+#ifdef FLASH_ROM_CHANGES
+    SaveNormalFlashChunk();
+#endif // FLASH_ROM_CHANGES
 
     return status;
 }

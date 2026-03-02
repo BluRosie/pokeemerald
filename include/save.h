@@ -2,6 +2,7 @@
 #define GUARD_SAVE_H
 
 #include "main.h"
+#include "config.h"
 
 // Each 4 KiB flash sector contains 3968 bytes of actual data followed by a 128 byte footer.
 // Only 12 bytes of the footer are used.
@@ -112,5 +113,12 @@ void Task_LinkFullSave(u8 taskId);
 
 // save_failed_screen.c
 void DoSaveFailedScreen(u8 saveType);
+
+#ifdef FLASH_ROM_CHANGES
+// flash_code.s
+void Task_ClearSaveData_fillSramWithFF(void);
+void SaveNormalFlashChunk(void);
+#endif
+
 
 #endif // GUARD_SAVE_H

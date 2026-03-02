@@ -1,3 +1,4 @@
+#include "config.h"
 	.include "constants/gba_constants.inc"
 
 	.syntax unified
@@ -6,6 +7,32 @@
 
 	.align 2, 0
 Init::
+
+#ifdef FLASH_ROM_CHANGES
+// need to copy save to sram from where in the rom it is saved
+	mov r0, #0xFC
+	mov r0, r0, lsl#0x10
+	mov r1, #0x8000000
+	orr r0, r0, r1
+	mov r1, #0xE000000
+	mov r2, #0x10 // 0x10000
+	mov r2, r2, lsl#0xC
+// r0 = 0x08FC0000
+// r1 = 0x0E000000
+// r2 = 0x00010000
+initLoop:
+	ldrb r3, [r0]
+	ldrb r4, [r0]
+	cmp r3, r4
+	bne initLoop
+	strb r3, [r1]
+	add r1, #1
+	add r0, #1
+	subs r2, #1
+	bne initLoop
+// fall through to original Init
+#endif // FLASH_ROM_CHANGES
+
 	mov r0, #PSR_IRQ_MODE
 	msr cpsr_cf, r0
 	ldr sp, sp_irq
@@ -25,6 +52,7 @@ Init::
 	b Init
 
 	.align 2, 0
+//sp_init: .word IWRAM_END - 0x100
 sp_sys: .word IWRAM_END - 0x1c0
 sp_irq: .word IWRAM_END - 0x60
 

@@ -1,3 +1,4 @@
+#include "config.h"
 #include "gba/gba.h"
 #include "gba/flash_internal.h"
 
@@ -21,10 +22,14 @@ void SetReadFlash1(u16 *dest);
 
 void SwitchFlashBank(u8 bankNum)
 {
+#ifdef FLASH_ROM_CHANGES
+    return; // now does nothing
+#else
     FLASH_WRITE(0x5555, 0xAA);
     FLASH_WRITE(0x2AAA, 0x55);
     FLASH_WRITE(0x5555, 0xB0);
     FLASH_WRITE(0x0000, bankNum);
+#endif
 }
 
 #define DELAY()                  \
@@ -43,12 +48,15 @@ u16 ReadFlashId(void)
     SetReadFlash1(readFlash1Buffer);
     readFlash1 = (u8 (*)(u8 *))((s32)readFlash1Buffer + 1);
 
+#ifndef FLASH_ROM_CHANGES
     // Enter ID mode.
     FLASH_WRITE(0x5555, 0xAA);
     FLASH_WRITE(0x2AAA, 0x55);
     FLASH_WRITE(0x5555, 0x90);
+#endif // FLASH_ROM_CHANGES
     DELAY();
 
+#ifndef FLASH_ROM_CHANGES
     flashId = readFlash1(FLASH_BASE + 1) << 8;
     flashId |= readFlash1(FLASH_BASE);
 
@@ -57,6 +65,9 @@ u16 ReadFlashId(void)
     FLASH_WRITE(0x2AAA, 0x55);
     FLASH_WRITE(0x5555, 0xF0);
     FLASH_WRITE(0x5555, 0xF0);
+#else
+    flashId = 0x1362;
+#endif
     DELAY();
 
     return flashId;

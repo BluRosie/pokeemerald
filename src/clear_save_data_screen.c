@@ -1,4 +1,5 @@
 #include "global.h"
+#include "config.h"
 #include "task.h"
 #include "text.h"
 #include "menu.h"
@@ -107,6 +108,9 @@ static void Task_ClearSaveData(u8 taskId)
     ClearSaveData();
     DestroyTask(taskId);
     SetMainCallback2(CB2_FadeAndDoReset);
+#ifdef FLASH_ROM_CHANGES
+    Task_ClearSaveData_fillSramWithFF();
+#endif // FLASH_ROM_CHANGES
 }
 
 static void MainCB(void)
