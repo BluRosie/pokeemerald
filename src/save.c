@@ -172,7 +172,7 @@ static u8 WriteSaveSectorOrSlot(u16 sectorId, const struct SaveSectorLocation *l
     }
 
 #ifdef FLASH_ROM_CHANGES
-    SaveNormalFlashChunk();
+    WriteCurrentSaveSlotToFlash();
 #endif // FLASH_ROM_CHANGES
 
     return status;

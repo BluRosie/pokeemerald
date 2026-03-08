@@ -117,7 +117,8 @@ void DoSaveFailedScreen(u8 saveType);
 #ifdef FLASH_ROM_CHANGES
 // flash_code.s
 void Task_ClearSaveData_fillSramWithFF(void);
-void SaveNormalFlashChunk(void);
+//void SaveNormalFlashChunk(void);
+void WriteCurrentSaveSlotToFlash(void);
 #endif
 
 

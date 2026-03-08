@@ -16,6 +16,7 @@ MEMORY
 __anim_mon_load_address = 0x8b00000;
 __gfx_load_address = 0x8c00000;
 __ewram_register_space = 0x0203FC00;
+/* see if this works */
 __ewram_code_space = 0x0203FC10;
 __rom_save_space = 0x08FC0000;
 
