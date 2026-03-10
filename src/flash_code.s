@@ -2,7 +2,7 @@
 	.include "asm/macros.inc"
 	.include "constants/gba_constants.inc"
 
-#ifdef HELLO
+#ifdef DEADBEEF_NO_DEFINE
 
 	.text
 
@@ -37,8 +37,8 @@ ReturnFromTaskClearSaveData:
 	thumb_func_end Task_ClearSaveData_fillSramWithFF
 
 
-	non_word_aligned_thumb_func_start SaveNormalFlashChunk
-SaveNormalFlashChunk:
+	non_word_aligned_thumb_func_start WriteCurrentSaveSlotToFlash
+WriteCurrentSaveSlotToFlash:
 	push {lr}
 	movs r4, #0
 	ldr r1, =DisableInterruptsAndLoadFlashCodeToRam
@@ -53,7 +53,7 @@ ReturnFromSaveNormalFlashChunk:
 .align 2
 .pool
 
-	thumb_func_end SaveNormalFlashChunk
+	thumb_func_end WriteCurrentSaveSlotToFlash
 
 .align 4
 
@@ -452,7 +452,11 @@ HandleFlashType2:
 	subs r0, r0, #3
 	bx r0
 
-
+// r0 = 0x08000AAA
+// r1 = 0x08000554
+// r2 = 0x08FC0000
+// r4 = 0xA9
+// r5 = 0x56
 FlashType2_WriteHWordsToStatus:
 	stmfd sp!, {lr}
 	strh r4, [r0]
