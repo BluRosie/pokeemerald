@@ -3,12 +3,11 @@
 #include "gba/flash_internal.h"
 #include "save.h"
 
-#ifdef FLASH_ROM_CHANGES
+//#ifdef FLASH_ROM_CHANGES
 
 typedef u32 (*flash_ram_func)(u32);
 #define FLASH_HWORD_WRITE(address, value) ((*(vu16 *)(address)) = (value))
 #define FLASH_HWORD_READ(address) (*(vu16 *)(address))
-#define SAVE_ADDR_ARRAY(address, element) (&(((vu16 *)(address))[element]))
 
 //void Task_ClearSaveData_fillSramWithFF(void);
 void CopyFuncToRamSpace(flash_ram_func function, u32 size);
@@ -26,6 +25,17 @@ extern u32 __ewram_code_space(u32);
 
 #define EWRAM_FUNCTION ((flash_ram_func)(0x0203FC11))
 #define __sram_space ((u8 *)(0x0E000000))
+
+void LoadSaveSlotFromSaveSpace(void)
+{
+    u32 i;
+    for (i = 0; i < INDIVIDUAL_SAVE_SIZE; i++)
+    {
+        __sram_space[i] = (*(u8 *)(SAVE_ADDRESS + gSaveSlot * FULL_SAVE_SIZE + i));
+    }
+    LoadGameSave(SAVE_NORMAL);
+    // TODO:  check for errors and load backup if necessary
+}
 
 void Task_ClearSaveData_fillSramWithFF(void)
 {
@@ -180,35 +190,36 @@ u32 DetermineFlashType(u32 param UNUSED)
 
 u32 HandleFlashType0(u32 param UNUSED)
 {
+    // TODO: adapt code for slots
     s32 i;
     u16 flashRead;
     u16 *saveAddress = (u16 *)(SAVE_ADDRESS);
-    FLASH_HWORD_WRITE(SAVE_ADDRESS, 0xF0F0);
+    FLASH_HWORD_WRITE((u32)saveAddress, 0xF0F0);
     FLASH_HWORD_WRITE(0x08001554, 0xAAA9);
     FLASH_HWORD_WRITE(0x08000AAA, 0x5556);
     FLASH_HWORD_WRITE(0x08001554, 0x8080);
     FLASH_HWORD_WRITE(0x08001554, 0xAAA9);
     FLASH_HWORD_WRITE(0x08000AAA, 0x5556);
-    FLASH_HWORD_WRITE(SAVE_ADDRESS, 0x3030);
+    FLASH_HWORD_WRITE((u32)saveAddress, 0x3030);
     // FlashType0_MakeWriteable
     for (i = 0x100000; i > 0; i--)
     {
-        flashRead = FLASH_HWORD_READ(SAVE_ADDRESS);
+        flashRead = FLASH_HWORD_READ((u32)saveAddress);
         if (flashRead & 0x8000) break;
         if ((flashRead & 0x2000) == 0) continue;
-        flashRead = FLASH_HWORD_READ(SAVE_ADDRESS);
+        flashRead = FLASH_HWORD_READ((u32)saveAddress);
         if (flashRead & 0x8000) break;
     }
     for (i = 0x100000; i > 0; i--)
     {
-        flashRead = FLASH_HWORD_READ(SAVE_ADDRESS);
+        flashRead = FLASH_HWORD_READ((u32)saveAddress);
         if (flashRead & 0x80) break;
         if ((flashRead & 0x20) == 0) continue;
-        flashRead = FLASH_HWORD_READ(SAVE_ADDRESS);
+        flashRead = FLASH_HWORD_READ((u32)saveAddress);
         if (flashRead & 0x80) break;
     }
     // back in main function
-    FLASH_HWORD_WRITE(SAVE_ADDRESS, 0xF0F0);
+    FLASH_HWORD_WRITE((u32)saveAddress, 0xF0F0);
     FLASH_HWORD_WRITE(0x08001554, 0xAAA9);
     FLASH_HWORD_WRITE(0x08000AAA, 0x5556);
     FLASH_HWORD_WRITE(0x08001554, 0x2020);
@@ -226,76 +237,80 @@ u32 HandleFlashType0(u32 param UNUSED)
                 break;
         }
     }
-    FLASH_HWORD_WRITE(SAVE_ADDRESS, 0xF0F0);
+    FLASH_HWORD_WRITE((u32)saveAddress, 0xF0F0);
     return 0;
 }
 
 u32 HandleFlashType1(u32 param UNUSED)
 {
+    // TODO:  type 1 code
     return 0;
 }
 
 u32 HandleFlashType2(u32 param UNUSED)
 {
-    u32 i;
+    u32 i, backupSlot;
     u16 flashRead;
-    vu16 *saveAddress = (vu16 *)(SAVE_ADDRESS);
+    vu16 *saveAddress = (vu16 *)(SAVE_ADDRESS + gSaveSlot * FULL_SAVE_SIZE);
  
     // FlashType2_WriteHWordsToStatus
     FLASH_HWORD_WRITE(0x08000AAA, 0xA9);
     FLASH_HWORD_WRITE(0x08000554, 0x56);
-    FLASH_HWORD_WRITE(SAVE_ADDRESS, 0xF0);
+    FLASH_HWORD_WRITE((u32)saveAddress, 0xF0);
     // back in main function
     FLASH_HWORD_WRITE(0x08000AAA, 0xA9);
     FLASH_HWORD_WRITE(0x08000554, 0x56);
     FLASH_HWORD_WRITE(0x08000AAA, 0x80);
     FLASH_HWORD_WRITE(0x08000AAA, 0xA9);
     FLASH_HWORD_WRITE(0x08000554, 0x56);
-    FLASH_HWORD_WRITE(SAVE_ADDRESS, 0x30);
+    FLASH_HWORD_WRITE((u32)saveAddress, 0x30);
     // FlashType2_MakeWriteable
     for (i = 0x100000; i > 0; i--)
     {
-        flashRead = FLASH_HWORD_READ(SAVE_ADDRESS);
+        flashRead = FLASH_HWORD_READ((u32)saveAddress);
         if (flashRead & 0x80) break;
         if ((flashRead & 0x20) == 0) continue;
-        flashRead = FLASH_HWORD_READ(SAVE_ADDRESS);
+        flashRead = FLASH_HWORD_READ((u32)saveAddress);
         if (flashRead & 0x80) break;
     }
     // FlashType2_WriteHWordsToStatus
     FLASH_HWORD_WRITE(0x08000AAA, 0xA9);
     FLASH_HWORD_WRITE(0x08000554, 0x56);
-    FLASH_HWORD_WRITE(SAVE_ADDRESS, 0xF0);
+    FLASH_HWORD_WRITE((u32)saveAddress, 0xF0);
     // back in main function
     FLASH_HWORD_WRITE(0x08000AAA, 0xA9);
     FLASH_HWORD_WRITE(0x08000554, 0x56);
     FLASH_HWORD_WRITE(0x08000AAA, 0x20);
     // FlashType2_TransferSRAMToSaveSpace
-
-    for (i = 0; i < INDIVIDUAL_SAVE_SIZE; i += 2)
+    for (backupSlot = 0; backupSlot < 2; backupSlot++)
     {
-        u32 j;
-        flashRead = __sram_space[i] | (__sram_space[i+1] << 8);
-        FLASH_HWORD_WRITE((u32)&saveAddress[i/2], 0xA0);
-        asm("nop");
-        FLASH_HWORD_WRITE((u32)&saveAddress[i/2], flashRead);
-        for (j = 0x100; j > 0; j--)
+        for (i = 0; i < INDIVIDUAL_SAVE_SIZE; i += 2)
         {
-            if (flashRead == saveAddress[i/2])
-                break;
+            u32 j, u16Addr = ((backupSlot * INDIVIDUAL_SAVE_SIZE) / 2) + i/2;
+            flashRead = __sram_space[i] | (__sram_space[i+1] << 8);
+            FLASH_HWORD_WRITE((u32)&saveAddress[u16Addr], 0xA0);
+            asm("nop");
+            FLASH_HWORD_WRITE((u32)&saveAddress[u16Addr], flashRead);
+            for (j = 0x100; j > 0; j--)
+            {
+                if (flashRead == saveAddress[u16Addr])
+                    break;
+            }
         }
     }
     // back in main function
-    FLASH_HWORD_WRITE(SAVE_ADDRESS, 0x90);
-    FLASH_HWORD_WRITE(SAVE_ADDRESS, 0x00);
+    FLASH_HWORD_WRITE((u32)saveAddress, 0x90);
+    FLASH_HWORD_WRITE((u32)saveAddress, 0x00);
     // FlashType2_WriteHWordsToStatus
     FLASH_HWORD_WRITE(0x08000AAA, 0xA9);
     FLASH_HWORD_WRITE(0x08000554, 0x56);
-    FLASH_HWORD_WRITE(SAVE_ADDRESS, 0xF0);
+    FLASH_HWORD_WRITE((u32)saveAddress, 0xF0);
     return 0;
 }
 
 u32 HandleFlashType3(u32 param UNUSED)
 {
+    // TODO:  type 3 code
     return 0;
 }
 
@@ -304,4 +319,4 @@ void HandleFlashTypeEndStub(void)
     return;
 }
 
-#endif
+//#endif

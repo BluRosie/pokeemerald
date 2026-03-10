@@ -524,6 +524,7 @@ enum
     ACTION_MYSTERY_GIFT,
     ACTION_MYSTERY_EVENTS,
     ACTION_EREADER,
+    ACTION_CHANGE_SAVE_SLOT,
     ACTION_INVALID
 };
 
@@ -641,6 +642,9 @@ static void Task_MainMenuCheckSaveFile(u8 taskId)
             tWirelessAdapterConnected = TRUE;
         switch (gSaveFileStatus)
         {
+#ifdef FLASH_ROM_CHANGES
+            case SAVE_STATUS_ERROR:
+#endif
             case SAVE_STATUS_OK:
                 tMenuType = HAS_SAVED_GAME;
                 if (IsMysteryGiftEnabled())
@@ -652,6 +656,7 @@ static void Task_MainMenuCheckSaveFile(u8 taskId)
                 tMenuType = HAS_NO_SAVED_GAME;
                 gTasks[taskId].func = Task_WaitForSaveFileErrorWindow;
                 break;
+#ifndef FLASH_ROM_CHANGES
             case SAVE_STATUS_ERROR:
                 CreateMainMenuErrorWindow(gText_SaveFileCorrupted);
                 gTasks[taskId].func = Task_WaitForSaveFileErrorWindow;
@@ -659,6 +664,7 @@ static void Task_MainMenuCheckSaveFile(u8 taskId)
                 if (IsMysteryGiftEnabled() == TRUE)
                     tMenuType++;
                 break;
+#endif
             case SAVE_STATUS_EMPTY:
             default:
                 tMenuType = HAS_NO_SAVED_GAME;
@@ -688,7 +694,14 @@ static void Task_MainMenuCheckSaveFile(u8 taskId)
         }
         sCurrItemAndOptionMenuCheck &= ~OPTION_MENU_FLAG;  // turn off the "returning from options menu" flag
         tCurrItem = sCurrItemAndOptionMenuCheck;
-        tItemCount = tMenuType + 2;
+        if (tMenuType == HAS_SAVED_GAME)
+        {
+            tItemCount = 4;
+        }
+        else
+        {
+            tItemCount = tMenuType + 2;
+        }
     }
 }
 
@@ -742,6 +755,11 @@ static void Task_WaitForBatteryDryErrorWindow(u8 taskId)
         gTasks[taskId].func = Task_DisplayMainMenu;
     }
 }
+
+static const u8 sText_MainMenuSaveSlot[] = _("SAVE SLOT 1");
+EWRAM_DATA u8 sSaveSlotSelected = 0;
+extern u8 gSaveSlot;
+extern void LoadSaveSlotFromSaveSpace(void);
 
 static void Task_DisplayMainMenu(u8 taskId)
 {
@@ -799,22 +817,36 @@ static void Task_DisplayMainMenu(u8 taskId)
                 DrawMainMenuWindowBorder(&sWindowTemplates_MainMenu[1], MAIN_MENU_BORDER_TILE);
                 break;
             case HAS_SAVED_GAME:
+                {
+                u8 saveSlotString[12];
+                u32 i;
                 FillWindowPixelBuffer(2, PIXEL_FILL(0xA));
                 FillWindowPixelBuffer(3, PIXEL_FILL(0xA));
                 FillWindowPixelBuffer(4, PIXEL_FILL(0xA));
+                FillWindowPixelBuffer(5, PIXEL_FILL(0xA)); // new window for save slot
                 AddTextPrinterParameterized3(2, FONT_NORMAL, 0, 1, sTextColor_Headers, TEXT_SKIP_DRAW, gText_MainMenuContinue);
                 AddTextPrinterParameterized3(3, FONT_NORMAL, 0, 1, sTextColor_Headers, TEXT_SKIP_DRAW, gText_MainMenuNewGame);
                 AddTextPrinterParameterized3(4, FONT_NORMAL, 0, 1, sTextColor_Headers, TEXT_SKIP_DRAW, gText_MainMenuOption);
+                for (i = 0; i < (NELEMS(saveSlotString)); i++)
+                {
+                    saveSlotString[i] = sText_MainMenuSaveSlot[i];
+                }
+                saveSlotString[(NELEMS(saveSlotString) - 2)] = 0xA1 + gSaveSlot + 1;
+                AddTextPrinterParameterized3(5, FONT_NORMAL, 0, 1, sTextColor_Headers, TEXT_SKIP_DRAW, saveSlotString);
                 MainMenu_FormatSavegameText();
                 PutWindowTilemap(2);
                 PutWindowTilemap(3);
                 PutWindowTilemap(4);
+                PutWindowTilemap(5);
                 CopyWindowToVram(2, COPYWIN_GFX);
                 CopyWindowToVram(3, COPYWIN_GFX);
                 CopyWindowToVram(4, COPYWIN_GFX);
+                CopyWindowToVram(5, COPYWIN_GFX);
                 DrawMainMenuWindowBorder(&sWindowTemplates_MainMenu[2], MAIN_MENU_BORDER_TILE);
                 DrawMainMenuWindowBorder(&sWindowTemplates_MainMenu[3], MAIN_MENU_BORDER_TILE);
                 DrawMainMenuWindowBorder(&sWindowTemplates_MainMenu[4], MAIN_MENU_BORDER_TILE);
+                DrawMainMenuWindowBorder(&sWindowTemplates_MainMenu[5], MAIN_MENU_BORDER_TILE);
+                }
                 break;
             case HAS_MYSTERY_GIFT:
                 FillWindowPixelBuffer(2, PIXEL_FILL(0xA));
@@ -918,6 +950,24 @@ static bool8 HandleMainMenuInput(u8 taskId)
         sCurrItemAndOptionMenuCheck = tCurrItem;
         return TRUE;
     }
+    // allow for scrolling to the left and right, reprint string
+    else if ((JOY_NEW(DPAD_LEFT | DPAD_RIGHT)) && tMenuType == HAS_SAVED_GAME && tCurrItem == 3)
+    {
+        u32 i;
+        u8 saveSlotString[12];
+        if (JOY_NEW(DPAD_LEFT) && sSaveSlotSelected != 0) sSaveSlotSelected--;
+        else if (JOY_NEW(DPAD_RIGHT) && sSaveSlotSelected < (NUM_DIFFERENT_SAVES-1)) sSaveSlotSelected++;
+        PlaySE(SE_SELECT);
+        FillWindowPixelBuffer(5, PIXEL_FILL(0xA)); // save slot new window
+        for (i = 0; i < (NELEMS(saveSlotString)); i++)
+        {
+            saveSlotString[i] = sText_MainMenuSaveSlot[i];
+        }
+        saveSlotString[(NELEMS(saveSlotString) - 2)] = 0xA1 + sSaveSlotSelected + 1;
+        AddTextPrinterParameterized3(5, FONT_NORMAL, 0, 1, sTextColor_Headers, TEXT_SKIP_DRAW, saveSlotString);
+        PutWindowTilemap(5);
+        CopyWindowToVram(5, COPYWIN_GFX);
+    }
     else if ((JOY_NEW(DPAD_DOWN)) && tCurrItem < tItemCount - 1)
     {
         if (tMenuType == HAS_MYSTERY_EVENTS && tCurrItem == 3 && tIsScrolled == FALSE)
@@ -984,6 +1034,9 @@ static void Task_HandleMainMenuAPressed(u8 taskId)
                         break;
                     case 2:
                         action = ACTION_OPTION;
+                        break;
+                    case 3:
+                        action = ACTION_CHANGE_SAVE_SLOT;
                         break;
                 }
                 break;
@@ -1089,6 +1142,15 @@ static void Task_HandleMainMenuAPressed(u8 taskId)
             case ACTION_EREADER:
                 SetMainCallback2(CB2_InitEReader);
                 DestroyTask(taskId);
+                break;
+            case ACTION_CHANGE_SAVE_SLOT:
+                gSaveSlot = sSaveSlotSelected;
+                LoadSaveSlotFromSaveSpace();
+                //PlaySE(SE_SELECT);
+                BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 0x10, RGB_WHITEALPHA);
+                SetGpuReg(REG_OFFSET_WIN0H, WIN_RANGE(0, DISPLAY_WIDTH));
+                SetGpuReg(REG_OFFSET_WIN0V, WIN_RANGE(0, DISPLAY_HEIGHT));
+                gTasks[taskId].func = Task_HandleMainMenuBPressed; // go back to title screen
                 break;
             case ACTION_INVALID:
                 gTasks[taskId].tCurrItem = 0;
@@ -1204,6 +1266,9 @@ static void HighlightSelectedMainMenuItem(u8 menuType, u8 selectedMenuItem, s16 
                     break;
                 case 2:
                     SetGpuReg(REG_OFFSET_WIN0V, MENU_WIN_VCOORDS(4));
+                    break;
+                case 3:
+                    SetGpuReg(REG_OFFSET_WIN0V, MENU_WIN_VCOORDS(5));
                     break;
             }
             break;
