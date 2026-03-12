@@ -698,6 +698,10 @@ static void Task_MainMenuCheckSaveFile(u8 taskId)
         {
             tItemCount = 4;
         }
+        else if (tMenuType == HAS_NO_SAVED_GAME)
+        {
+            tItemCount = 3;
+        }
         else
         {
             tItemCount = tMenuType + 2;
@@ -805,16 +809,30 @@ static void Task_DisplayMainMenu(u8 taskId)
         {
             case HAS_NO_SAVED_GAME:
             default:
+                {
+                u8 saveSlotString[12];
+                u32 i;
                 FillWindowPixelBuffer(0, PIXEL_FILL(0xA));
                 FillWindowPixelBuffer(1, PIXEL_FILL(0xA));
+                FillWindowPixelBuffer(3, PIXEL_FILL(0xA));
                 AddTextPrinterParameterized3(0, FONT_NORMAL, 0, 1, sTextColor_Headers, TEXT_SKIP_DRAW, gText_MainMenuNewGame);
                 AddTextPrinterParameterized3(1, FONT_NORMAL, 0, 1, sTextColor_Headers, TEXT_SKIP_DRAW, gText_MainMenuOption);
+                for (i = 0; i < (NELEMS(saveSlotString)); i++)
+                {
+                    saveSlotString[i] = sText_MainMenuSaveSlot[i];
+                }
+                saveSlotString[(NELEMS(saveSlotString) - 2)] = 0xA1 + gSaveSlot + 1;
+                AddTextPrinterParameterized3(3, FONT_NORMAL, 0, 1, sTextColor_Headers, TEXT_SKIP_DRAW, saveSlotString);
                 PutWindowTilemap(0);
                 PutWindowTilemap(1);
+                PutWindowTilemap(3);
                 CopyWindowToVram(0, COPYWIN_GFX);
                 CopyWindowToVram(1, COPYWIN_GFX);
+                CopyWindowToVram(3, COPYWIN_GFX);
                 DrawMainMenuWindowBorder(&sWindowTemplates_MainMenu[0], MAIN_MENU_BORDER_TILE);
                 DrawMainMenuWindowBorder(&sWindowTemplates_MainMenu[1], MAIN_MENU_BORDER_TILE);
+                DrawMainMenuWindowBorder(&sWindowTemplates_MainMenu[3], MAIN_MENU_BORDER_TILE);
+                }
                 break;
             case HAS_SAVED_GAME:
                 {
@@ -951,22 +969,23 @@ static bool8 HandleMainMenuInput(u8 taskId)
         return TRUE;
     }
     // allow for scrolling to the left and right, reprint string
-    else if ((JOY_NEW(DPAD_LEFT | DPAD_RIGHT)) && tMenuType == HAS_SAVED_GAME && tCurrItem == 3)
+    else if (JOY_NEW(DPAD_LEFT | DPAD_RIGHT) && ((tMenuType == HAS_SAVED_GAME && tCurrItem == 3) || (tMenuType == HAS_NO_SAVED_GAME && tCurrItem == 2)))
     {
-        u32 i;
         u8 saveSlotString[12];
+        u32 i;
         if (JOY_NEW(DPAD_LEFT) && sSaveSlotSelected != 0) sSaveSlotSelected--;
         else if (JOY_NEW(DPAD_RIGHT) && sSaveSlotSelected < (NUM_DIFFERENT_SAVES-1)) sSaveSlotSelected++;
         PlaySE(SE_SELECT);
-        FillWindowPixelBuffer(5, PIXEL_FILL(0xA)); // save slot new window
         for (i = 0; i < (NELEMS(saveSlotString)); i++)
         {
             saveSlotString[i] = sText_MainMenuSaveSlot[i];
         }
+        i = (tMenuType == HAS_SAVED_GAME) ? 5 : 3;
         saveSlotString[(NELEMS(saveSlotString) - 2)] = 0xA1 + sSaveSlotSelected + 1;
-        AddTextPrinterParameterized3(5, FONT_NORMAL, 0, 1, sTextColor_Headers, TEXT_SKIP_DRAW, saveSlotString);
-        PutWindowTilemap(5);
-        CopyWindowToVram(5, COPYWIN_GFX);
+        FillWindowPixelBuffer(i, PIXEL_FILL(0xA)); // save slot new window
+        AddTextPrinterParameterized3(i, FONT_NORMAL, 0, 1, sTextColor_Headers, TEXT_SKIP_DRAW, saveSlotString);
+        PutWindowTilemap(i);
+        CopyWindowToVram(i, COPYWIN_GFX);
     }
     else if ((JOY_NEW(DPAD_DOWN)) && tCurrItem < tItemCount - 1)
     {
@@ -1019,6 +1038,9 @@ static void Task_HandleMainMenuAPressed(u8 taskId)
                         break;
                     case 1:
                         action = ACTION_OPTION;
+                        break;
+                    case 2:
+                        action = ACTION_CHANGE_SAVE_SLOT;
                         break;
                 }
                 break;
@@ -1251,6 +1273,9 @@ static void HighlightSelectedMainMenuItem(u8 menuType, u8 selectedMenuItem, s16 
                     break;
                 case 1:
                     SetGpuReg(REG_OFFSET_WIN0V, MENU_WIN_VCOORDS(1));
+                    break;
+                case 2:
+                    SetGpuReg(REG_OFFSET_WIN0V, MENU_WIN_VCOORDS(3));
                     break;
             }
             break;
