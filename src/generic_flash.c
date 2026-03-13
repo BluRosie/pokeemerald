@@ -28,13 +28,23 @@ extern u32 __ewram_code_space(u32);
 
 void LoadSaveSlotFromSaveSpace(void)
 {
-    u32 i;
+    u32 i, baseAddress;
+    baseAddress = SAVE_ADDRESS + gSaveSlot * FULL_SAVE_SIZE;
     for (i = 0; i < INDIVIDUAL_SAVE_SIZE; i++)
     {
-        __sram_space[i] = (*(u8 *)(SAVE_ADDRESS + gSaveSlot * FULL_SAVE_SIZE + i));
+        __sram_space[i] = (*(u8 *)(baseAddress + i));
+    }
+    i = LoadGameSave(SAVE_NORMAL);
+    // if initial save load is corrupt, try loading the backup second one
+    if (i == SAVE_STATUS_CORRUPT)
+    {
+        baseAddress = SAVE_ADDRESS + gSaveSlot * FULL_SAVE_SIZE + INDIVIDUAL_SAVE_SIZE;
+        for (i = 0; i < INDIVIDUAL_SAVE_SIZE; i++)
+        {
+            __sram_space[i] = (*(u8 *)(baseAddress + i));
+        }
     }
     LoadGameSave(SAVE_NORMAL);
-    // TODO:  check for errors and load backup if necessary
 }
 
 void Task_ClearSaveData_fillSramWithFF(void)
@@ -252,7 +262,7 @@ u32 HandleFlashType2(u32 param UNUSED)
     u32 i, backupSlot;
     u16 flashRead;
     vu16 *saveAddress = (vu16 *)(SAVE_ADDRESS + gSaveSlot * FULL_SAVE_SIZE);
- 
+
     // FlashType2_WriteHWordsToStatus
     FLASH_HWORD_WRITE(0x08000AAA, 0xA9);
     FLASH_HWORD_WRITE(0x08000554, 0x56);
